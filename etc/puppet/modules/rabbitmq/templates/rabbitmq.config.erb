@@ -1,0 +1,34 @@
+[
+{rabbitmq_shovel,
+	[{shovels,
+		[{local_to_remote_shovel,
+        [{sources, 		[{broker, "amqp://<%= rabbitmq_user %>:<%= rabbitmq_password %>@localhost:5672/<%= rabbitmq_vhost %>"},
+        				{declarations,
+                               [{'queue.declare',
+                                       [{queue, <<"local_queue">>},
+                                         durable]},
+                                {'exchange.declare',
+                                       [{exchange, <<"local_exchange">>},
+                                        {type, <<"fanout">>},
+                                        durable]},
+                                {'queue.bind',
+                                    [{exchange, <<"local_exchange">>},
+                                     {queue, <<"local_queue">>}]}
+                               ]}]},
+		{destinations, 	[{broker, "amqp://qmg:m4rl1n@<%= rabbitmq_consumer %>:5672/qmg_vhost"},
+						{declarations,
+                               [{'exchange.declare',
+                                       [{exchange, <<"remote_exchange">>},
+                                        {type, <<"direct">>},
+                                        durable]}
+                               ]}]},
+		{queue, <<"local_queue">>},
+		{prefetch_count, 10},
+		{publish_properties, [{delivery_mode, 2} ]},
+		{publish_fields, [{exchange, <<"remote_exchange">>} ]},
+		{reconnect_delay, 5}
+        ]}
+    	]
+	}]
+}
+].
